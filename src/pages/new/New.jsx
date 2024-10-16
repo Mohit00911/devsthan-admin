@@ -518,8 +518,9 @@ const NewTour = ({ title }) => {
         console.log("API response:", responseData);
         toast.success("Tour created successfully!");
       } catch (error) {
-        console.error("Error:", error);
-        toast.error(error.message);
+        // console.error("Error:", error);
+        // toast.error(error.message);
+        console.log(error)
       }
     };
   
