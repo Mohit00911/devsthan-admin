@@ -519,7 +519,7 @@ const NewTour = ({ title }) => {
         toast.success("Tour created successfully!");
       } catch (error) {
         console.error("Error:", error);
-        toast.error("Failed to create tour");
+        toast.error(error.message);
       }
     };
   
