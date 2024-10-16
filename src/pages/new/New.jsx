@@ -147,17 +147,7 @@ const NewTour = ({ title }) => {
       },
     }));
   };
-  const handleInputFocus = () => {
-    setShowDropdown(true);
-  };
-
-  const handleInputBlur = (e) => {
-    // Prevent closing if clicking inside the dropdown
-    if (!e.currentTarget.contains(e.relatedTarget)) {
-      setShowDropdown(false);
-    }
-  };
-
+ 
   const handleCategorySelect = (categoryId) => {
     if (!tourData.categories.includes(categoryId)) {
       setTourData((prevData) => ({
