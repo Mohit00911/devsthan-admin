@@ -3,6 +3,9 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import "./new.css";
 import { BASE_URL } from "../../utils/headers";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const NewTour = ({ title }) => {
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -513,8 +516,10 @@ const NewTour = ({ title }) => {
   
         const responseData = await response.json();
         console.log("API response:", responseData);
+        toast.success("Tour created successfully!");
       } catch (error) {
         console.error("Error:", error);
+        toast.error("Failed to create tour");
       }
     };
   
