@@ -17,7 +17,7 @@ function App() {
 
   return (
     <div className={darkMode ? "app dark" : "app"}>
-       <ToastContainer />
+      <ToastContainer />
       <BrowserRouter>
         <Routes>
           {/* Redirect to login if the user tries to access /admin */}
@@ -28,24 +28,24 @@ function App() {
           <Route path="/admin/home" element={<Home />} />
           <Route path="/admin/category">
             <Route index element={<CategoryList />} />
-          
-           
-            
+
+
+
           </Route>
           <Route path="/admin/attributes">
             <Route index element={<AttributesList />} />
-          
-           
-            
+
+
+
           </Route>
           <Route path="/admin/tours">
             <Route index element={<List />} />
             <Route path=":userId" element={<Single />} />
             <Route
               path="new"
-              element={<New  title="Add New Tour" />}
+              element={<New title="Add New Tour" />}
             />
-            
+
           </Route>
           <Route path="/admin/products">
             <Route index element={<List />} />
