@@ -13,7 +13,7 @@ const Login = () => {
 
    
     const correctUsername = "admin";
-    const correctPassword = "password123";
+    const correctPassword = "123";
 
     // Check if the entered credentials are correct
     if (username === correctUsername && password === correctPassword) {

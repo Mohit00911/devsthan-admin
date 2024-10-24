@@ -3,22 +3,25 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import "./new.css";
 import { BASE_URL } from "../../utils/headers";
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { v4 as uuidv4 } from 'uuid'; 
+import { v4 as uuidv4 } from 'uuid';
 
 const NewTour = ({ title }) => {
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [openTranportation, setOpenTranportation] = useState(false);
+  const [openPremiumTranportation, setOpenPremiumTranportation] = useState(false);
+  const [openStandardTransportation, setOpenStandardTransportation] = useState(false);
   const [selectedTourType, setSelectedTourType] = useState("standard");
   const [categories, setCategories] = useState([]);
   const [attributes, setAttributes] = useState([]);
 
-  const [showDropdown, setShowDropdown] = useState(true);
+
   const [tourData, setTourData] = useState({
     uuid: uuidv4(),
     name: "",
     overview: "",
     location: "",
+    welcomeDrinks: false,
     duration: "",
     transportation: false,
     groupSize: "",
@@ -48,13 +51,33 @@ const NewTour = ({ title }) => {
         {
           title: "",
           duration: "",
-          meals: [""],
+          meals: {
+            breakfast: {
+              isAvailable: false,
+              name: "",
+              photos: []
+            }, lunch: {
+              isAvailable: false,
+              name: "",
+              photos: []
+            }, dinner: {
+              isAvailable: false,
+              name: "",
+              photos: []
+            }
+          },
+          hotelPhotos: [
+
+          ],
           image: "",
           description: "",
           day: 1,
           hotelName: "",
           hotelUrl: "",
           siteSeenPhotos: [],
+          transportation: false, // Ensure this is initialized
+          carName: "",
+          carPhotos: [],
           managerName: "",
           managerImage: "",
         },
@@ -62,7 +85,15 @@ const NewTour = ({ title }) => {
       highlights: [""],
       whatsIncluded: [""],
       whatsExcluded: [""],
-      price: "",
+      pricing: [
+        {
+          person: 1,
+          price: ""
+        }
+      ]
+
+      ,
+
       inclusions: [""],
       exclusions: [""],
       cancellationPolicy: "",
@@ -73,13 +104,31 @@ const NewTour = ({ title }) => {
         {
           title: "",
           duration: "",
-          meals: [""],
+          meals: {
+            breakfast: {
+              isAvailable: false,
+              name: "",
+              photos: []
+            }, lunch: {
+              isAvailable: false,
+              name: "",
+              photos: []
+            }, dinner: {
+              isAvailable: false,
+              name: "",
+              photos: []
+            }
+          },
           image: "",
           description: "",
           day: 1,
+          hotelPhotos:[],
           hotelName: "",
           hotelUrl: "",
           siteSeenPhotos: [],
+          transportation: false, // Ensure this is initialized
+          carName: "",
+          carPhotos: [],
           managerName: "",
           managerImage: "",
         },
@@ -87,7 +136,14 @@ const NewTour = ({ title }) => {
       highlights: [""],
       whatsIncluded: [""],
       whatsExcluded: [""],
-      price: "",
+      pricing: [
+        {
+          person: 1,
+          price: ""
+        }
+      ]
+
+      ,
       cancellationPolicy: "",
       inclusions: [""],
       exclusions: [""],
@@ -98,13 +154,31 @@ const NewTour = ({ title }) => {
         {
           title: "",
           duration: "",
-          meals: [""],
+          meals: {
+            breakfast: {
+              isAvailable: false,
+              name: "",
+              photos: []
+            }, lunch: {
+              isAvailable: false,
+              name: "",
+              photos: []
+            }, dinner: {
+              isAvailable: false,
+              name: "",
+              photos: []
+            }
+          },
           image: "",
           description: "",
           day: 1,
           hotelName: "",
           hotelUrl: "",
+          hotelPhotos:[],
           siteSeenPhotos: [],
+          transportation: false, // Ensure this is initialized
+          carName: "",
+          carPhotos: [],
           managerName: "",
           managerImage: "",
         },
@@ -112,13 +186,63 @@ const NewTour = ({ title }) => {
       highlights: [""],
       whatsIncluded: [""],
       whatsExcluded: [""],
-      price: "",
+      pricing: [
+        {
+          person: 1,
+          price: ""
+        }
+      ]
+
+      ,
+
       inclusions: [""],
       cancellationPolicy: "",
       exclusions: [""],
     },
   });
 
+  // Function to handle meal photo changes
+  const handleMealPhotosChange = (e, itineraryIndex, mealType, tourDetailType) => {
+    const files = Array.from(e.target.files); // Get the uploaded files
+    setTourData((prevState) => {
+      const updatedItineraries = [...prevState[tourDetailType].itineraries];
+      const updatedItinerary = { ...updatedItineraries[itineraryIndex] };
+
+      if (!updatedItinerary.meals[mealType]) {
+        updatedItinerary.meals[mealType] = { isAvailable: true, name: "", photos: [] }; // Initialize mealType if it doesn't exist
+      }
+
+      updatedItinerary.meals[mealType].photos = [...updatedItinerary.meals[mealType].photos, ...files];
+      updatedItineraries[itineraryIndex] = updatedItinerary;
+
+      return {
+        ...prevState,
+        [tourDetailType]: {
+          ...prevState[tourDetailType],
+          itineraries: updatedItineraries,
+        },
+      };
+    });
+  };
+
+
+  const handleDeleteMealPhoto = (itineraryIndex, photoIndex, mealType, tourDetailType) => {
+    setTourData((prevState) => {
+      const updatedItineraries = [...prevState[tourDetailType].itineraries];
+      const updatedItinerary = { ...updatedItineraries[itineraryIndex] };
+
+      updatedItinerary.meals[mealType].photos = updatedItinerary.meals[mealType].photos.filter((_, index) => index !== photoIndex);
+      updatedItineraries[itineraryIndex] = updatedItinerary;
+
+      return {
+        ...prevState,
+        [tourDetailType]: {
+          ...prevState[tourDetailType],
+          itineraries: updatedItineraries,
+        },
+      };
+    });
+  };
 
 
   const handleBannerImageChange = (event) => {
@@ -137,12 +261,10 @@ const NewTour = ({ title }) => {
       bannerImage: "", // Clear the banner image
     }));
   };
-  console.log(tourData)
+
 
   const handleFieldChange = (field, value, category) => {
-    console.log(field)
-    console.log(value)
-    console.log(category)
+
     setTourData((prevData) => {
       return {
         ...prevData,
@@ -171,11 +293,28 @@ const NewTour = ({ title }) => {
       description: '',
       hotelName: '',
       hotelUrl: '',
+      hotelPhotos:[],
       siteSeenPhotos: [],
-      meals: [],
+      meals: {
+        breakfast: {
+          isAvailable: false,
+          name: '',
+          photos: [],
+        },
+        lunch: {
+          isAvailable: false,
+          name: '',
+          photos: [],
+        },
+        dinner: {
+          isAvailable: false,
+          name: '',
+          photos: [],
+        },
+      },
       managerName: '',
     };
-  
+
     // Update state with the new itinerary
     setTourData((prevData) => ({
       ...prevData,
@@ -192,6 +331,23 @@ const NewTour = ({ title }) => {
       updatedItineraries[itineraryIndex] = {
         ...updatedItineraries[itineraryIndex],
         siteSeenPhotos: [...updatedItineraries[itineraryIndex].siteSeenPhotos, ...files], // Append new photos
+      };
+      return {
+        ...prevData,
+        [detailsType]: {
+          ...prevData[detailsType],
+          itineraries: updatedItineraries,
+        },
+      };
+    });
+  };
+  const handleHotelPhotoChange = (event, itineraryIndex, detailsType) => {
+    const files = Array.from(event.target.files); // Convert FileList to an array
+    setTourData((prevData) => {
+      const updatedItineraries = [...prevData[detailsType].itineraries];
+      updatedItineraries[itineraryIndex] = {
+        ...updatedItineraries[itineraryIndex],
+        hotelPhotos: [...updatedItineraries[itineraryIndex].hotelPhotos, ...files], // Append new photos
       };
       return {
         ...prevData,
@@ -219,6 +375,23 @@ const NewTour = ({ title }) => {
       };
     });
   };
+  const handleDeleteHotelPhoto = (itineraryIndex, photoIndex, itineraryType) => {
+    setTourData((prevData) => {
+      const updatedItineraries = [...prevData.standardDetails.itineraries];
+      updatedItineraries[itineraryIndex].hotelPhotos = updatedItineraries[
+        itineraryIndex
+      ].hotelPhotos.filter((_, index) => index !== photoIndex);
+
+      return {
+        ...prevData,
+        standardDetails: {
+          ...prevData.standardDetails,
+          itineraries: updatedItineraries,
+        },
+      };
+    });
+  };
+
 
   const handleAttributeSelect = (attributeId) => {
     if (!tourData.attributes.includes(attributeId)) {
@@ -250,31 +423,59 @@ const NewTour = ({ title }) => {
       };
     });
   };
-
-  const handleMealChange = (e, index, type) => {
-    const { value, checked } = e.target;
-
+  const handleMealChange = (e, itineraryIndex, mealType, tourDetailType) => {
+    const { checked } = e.target; // Get the checked status
     setTourData((prevState) => {
-      const newItineraries = [...prevState[type].itineraries];
-      const selectedMeals = newItineraries[index].meals;
+      const updatedItineraries = [...prevState[tourDetailType].itineraries];
+      const updatedItinerary = { ...updatedItineraries[itineraryIndex] };
 
-      if (checked) {
-        // Add the meal if it's checked
-        newItineraries[index].meals = [...selectedMeals, value];
-      } else {
-        // Remove the meal if it's unchecked
-        newItineraries[index].meals = selectedMeals.filter((meal) => meal !== value);
-      }
+      // Update the `isAvailable` field for the mealType (e.g., "breakfast")
+      updatedItinerary.meals[mealType].isAvailable = checked;
+
+      updatedItineraries[itineraryIndex] = updatedItinerary;
 
       return {
         ...prevState,
-        [type]: {
-          ...prevState[type],
-          itineraries: newItineraries,
+        [tourDetailType]: {
+          ...prevState[tourDetailType],
+          itineraries: updatedItineraries,
         },
       };
     });
   };
+
+  // Function to handle deleting car photos
+  const handleDeleteCarPhoto = (itineraryIndex, photoIndex, packageType) => {
+    const updatedItineraries = [...tourData[packageType].itineraries];
+
+    // Remove the selected photo from carPhotos
+    updatedItineraries[itineraryIndex].carPhotos.splice(photoIndex, 1);
+
+    setTourData((prevState) => ({
+      ...prevState,
+      [packageType]: {
+        ...prevState[packageType],
+        itineraries: updatedItineraries,
+      },
+    }));
+  };
+
+  const handleCarPhotosChange = (e, index, packageType) => {
+    const files = Array.from(e.target.files); // Convert the FileList to an array
+    const updatedItineraries = [...tourData[packageType].itineraries];
+
+    // Append the new files to the existing carPhotos array
+    updatedItineraries[index].carPhotos = [...updatedItineraries[index].carPhotos, ...files];
+
+    setTourData((prevState) => ({
+      ...prevState,
+      [packageType]: {
+        ...prevState[packageType],
+        itineraries: updatedItineraries,
+      },
+    }));
+  };
+
 
   const handleDeletePhoto = (index) => {
     // Remove the photo at the specified index
@@ -293,24 +494,7 @@ const NewTour = ({ title }) => {
     }));
   };
 
-  // Function to handle multiple image upload
-  const handleImageChange = (e, index) => {
-    const file = e.target.files[0];
-    const updatedImages = [...tourData.images];
-    updatedImages[index] = file;
-    setTourData({
-      ...tourData,
-      images: updatedImages,
-    });
-  };
 
-  // Function to add more image fields
-  const addImageField = () => {
-    setTourData({
-      ...tourData,
-      images: [...tourData.images, ""], // Add a new empty string for file input
-    });
-  };
   const addLanguageField = () => {
     setTourData((prevData) => ({
       ...prevData,
@@ -330,7 +514,7 @@ const NewTour = ({ title }) => {
   const handleChange = (e) => {
 
     const { name, value } = e.target;
-    console.log("hii")
+
     setTourData((prev) => ({
       ...prev,
       [name]: value,
@@ -347,6 +531,35 @@ const NewTour = ({ title }) => {
       },
     }));
   };
+  const addPricingArrayField = (field, category) => {
+    setTourData((prev) => {
+      const updatedCategory = { ...prev[category] };
+      const updatedPricing = [...updatedCategory.pricing];
+
+      // Determine the next person count
+      const nextPerson = updatedPricing.length > 0 ? updatedPricing.length + 1 : 1;
+
+      // Create a new pricing object
+      const newPricing = {
+        person: nextPerson,
+        price: "",
+      };
+
+      // Add the new pricing entry
+      updatedPricing.push(newPricing);
+
+      return {
+        ...prev,
+        [category]: {
+          ...updatedCategory,
+          pricing: updatedPricing,
+        },
+      };
+    });
+  };
+
+
+
 
   const removeArrayField = (index, field, category) => {
     const updatedCategory = { ...tourData[category] };
@@ -375,28 +588,32 @@ const NewTour = ({ title }) => {
       },
     }));
   };
-  console.log('Fixed Dates:', tourData.fixedDates);
-  console.log('Open Hours:', tourData.openHours);
+  const removePricingArrayField = (index, field, category, itineraryIndex) => {
+    setTourData((prev) => {
+      // Clone the data
+      const updatedCategory = { ...prev[category] };
 
-  const addItineraryField = (category) => {
-    setTourData({
-      ...tourData,
-      [category]: {
-        ...tourData[category],
-        itineraries: [
-          ...tourData[category].itineraries,
-          {
-            title: "",
-            duration: "",
-            meals: [""],
-            image: "",
-            description: "",
-            day: tourData[category].itineraries.length + 1,
-          },
-        ],
-      },
+      // Access the correct itinerary's pricing array
+      const updatedItineraries = [...updatedCategory.itineraries];
+      const selectedItinerary = updatedItineraries[itineraryIndex];
+
+      // Remove the pricing entry at the specified index
+      selectedItinerary[field] = selectedItinerary[field].filter((_, i) => i !== index);
+
+      // Update the selected itinerary's field (e.g., pricing)
+      updatedItineraries[itineraryIndex] = selectedItinerary;
+
+      return {
+        ...prev,
+        [category]: {
+          ...updatedCategory,
+          itineraries: updatedItineraries,
+        },
+      };
     });
   };
+
+
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     setTourData((prevState) => ({
@@ -404,6 +621,42 @@ const NewTour = ({ title }) => {
       images: [...prevState.images, ...files], // Append new files to the existing ones
     }));
   };
+  console.log(tourData)
+  const handleItineraryMealsChange = (itineraryIndex, mealType, field, files, tourDetailType) => {
+    setTourData((prevState) => {
+      const updatedItineraries = [...prevState[tourDetailType].itineraries];
+      const updatedItinerary = { ...updatedItineraries[itineraryIndex] };
+
+      if (field === "photos") {
+        // Get the current list of photos
+        const currentPhotos = updatedItinerary.meals[mealType][field];
+
+        // Filter out duplicates by comparing the name and size of each file
+        const newFiles = Array.from(files).filter((newFile) => {
+          return !currentPhotos.some(
+            (existingFile) => existingFile.name === newFile.name && existingFile.size === newFile.size
+          );
+        });
+
+        // Append only the new files (without duplicates)
+        updatedItinerary.meals[mealType][field] = [...currentPhotos, ...newFiles];
+      } else {
+        // Update other fields (e.g., name)
+        updatedItinerary.meals[mealType][field] = files;
+      }
+
+      updatedItineraries[itineraryIndex] = updatedItinerary;
+
+      return {
+        ...prevState,
+        [tourDetailType]: {
+          ...prevState[tourDetailType],
+          itineraries: updatedItineraries,
+        },
+      };
+    });
+  };
+
 
 
   const handleArrayChange = (index, field, value, category) => {
@@ -424,6 +677,22 @@ const NewTour = ({ title }) => {
       };
     });
   };
+
+  const handlePricingArrayChange = (index, updatedValue, category) => {
+    setTourData((prevData) => {
+      // Clone the current category (standard, deluxe, or premium)
+      const updatedCategory = { ...prevData[category] };
+
+      // Update the specific pricing entry in the category
+      updatedCategory.pricing[index] = updatedValue;
+
+      return {
+        ...prevData,
+        [category]: updatedCategory,
+      };
+    });
+  };
+
   const handleArrayChangeLanguage = (index, value) => {
 
     setTourData((prevData) => {
@@ -450,7 +719,7 @@ const NewTour = ({ title }) => {
         const responseAttribute = await fetch(`${BASE_URL}/api/attributes`);
 
         const attributeData = await responseAttribute.json();
-        console.log(attributeData)
+
         const data = await response.json();
         setAttributes(attributeData)
         setCategories(data);
@@ -467,69 +736,191 @@ const NewTour = ({ title }) => {
     const handleSaveChanges = async () => {
       try {
         const formData = new FormData();
-
-        // Append site seen photos from standard itineraries
+    
+        // Append site seen and hotel photos from standard itineraries
         if (tourData.standardDetails?.itineraries) {
           tourData.standardDetails.itineraries.forEach((itinerary) => {
+            // Append site seen photos
             if (itinerary.siteSeenPhotos && Array.isArray(itinerary.siteSeenPhotos)) {
               itinerary.siteSeenPhotos.forEach((photo) => {
-                // Ensure photo is a valid File object
                 if (photo instanceof File) {
                   formData.append(`standardSiteSeenPhotos`, photo);
-                } else {
-                  console.error('Invalid photo in standard itineraries:', photo);
+                }
+              });
+            }
+    
+            // Append hotel photos
+            if (itinerary.hotelPhotos && Array.isArray(itinerary.hotelPhotos)) {
+              itinerary.hotelPhotos.forEach((photo) => {
+                if (photo instanceof File) {
+                  formData.append(`standardHotelPhotos`, photo);
+                }
+              });
+            }
+    
+            // Append car photos
+            if (itinerary.carPhotos && Array.isArray(itinerary.carPhotos)) {
+              itinerary.carPhotos.forEach((photo) => {
+                if (photo instanceof File) {
+                  formData.append(`standardCarPhotos`, photo);
+                }
+              });
+            }
+    
+            // Append meal photos for breakfast, lunch, and dinner
+            if (itinerary.meals?.breakfast?.photos) {
+              itinerary.meals.breakfast.photos.forEach((photo) => {
+                if (photo instanceof File) {
+                  formData.append(`standardMealsPhotos`, photo);
+                }
+              });
+            }
+    
+            if (itinerary.meals?.lunch?.photos) {
+              itinerary.meals.lunch.photos.forEach((photo) => {
+                if (photo instanceof File) {
+                  formData.append(`standardMealsPhotos`, photo);
+                }
+              });
+            }
+    
+            if (itinerary.meals?.dinner?.photos) {
+              itinerary.meals.dinner.photos.forEach((photo) => {
+                if (photo instanceof File) {
+                  formData.append(`standardMealsPhotos`, photo);
                 }
               });
             }
           });
         }
-
-        // Append site seen photos from deluxe itineraries
+    
+        // Repeat the process for deluxe itineraries
         if (tourData.deluxeDetails?.itineraries) {
           tourData.deluxeDetails.itineraries.forEach((itinerary) => {
+            // Append site seen photos
             if (itinerary.siteSeenPhotos && Array.isArray(itinerary.siteSeenPhotos)) {
               itinerary.siteSeenPhotos.forEach((photo) => {
                 if (photo instanceof File) {
                   formData.append(`deluxeSiteSeenPhotos`, photo);
-                } else {
-                  console.error('Invalid photo in deluxe itineraries:', photo);
+                }
+              });
+            }
+    
+            // Append hotel photos
+            if (itinerary.hotelPhotos && Array.isArray(itinerary.hotelPhotos)) {
+              itinerary.hotelPhotos.forEach((photo) => {
+                if (photo instanceof File) {
+                  formData.append(`deluxeHotelPhotos`, photo);
+                }
+              });
+            }
+    
+            // Append car photos
+            if (itinerary.carPhotos && Array.isArray(itinerary.carPhotos)) {
+              itinerary.carPhotos.forEach((photo) => {
+                if (photo instanceof File) {
+                  formData.append(`deluxeCarPhotos`, photo);
+                }
+              });
+            }
+    
+            // Append meal photos for breakfast, lunch, and dinner
+            if (itinerary.meals?.breakfast?.photos) {
+              itinerary.meals.breakfast.photos.forEach((photo) => {
+                if (photo instanceof File) {
+                  formData.append(`deluxeMealsPhotos`, photo);
+                }
+              });
+            }
+    
+            if (itinerary.meals?.lunch?.photos) {
+              itinerary.meals.lunch.photos.forEach((photo) => {
+                if (photo instanceof File) {
+                  formData.append(`deluxeMealsPhotos`, photo);
+                }
+              });
+            }
+    
+            if (itinerary.meals?.dinner?.photos) {
+              itinerary.meals.dinner.photos.forEach((photo) => {
+                if (photo instanceof File) {
+                  formData.append(`deluxeMealsPhotos`, photo);
                 }
               });
             }
           });
         }
-
-        // Append site seen photos from premium itineraries
+    
+        // Repeat the process for premium itineraries
         if (tourData.premiumDetails?.itineraries) {
           tourData.premiumDetails.itineraries.forEach((itinerary) => {
+            // Append site seen photos
             if (itinerary.siteSeenPhotos && Array.isArray(itinerary.siteSeenPhotos)) {
               itinerary.siteSeenPhotos.forEach((photo) => {
                 if (photo instanceof File) {
                   formData.append(`premiumSiteSeenPhotos`, photo);
-                } else {
-                  console.error('Invalid photo in premium itineraries:', photo);
+                }
+              });
+            }
+    
+            // Append hotel photos
+            if (itinerary.hotelPhotos && Array.isArray(itinerary.hotelPhotos)) {
+              itinerary.hotelPhotos.forEach((photo) => {
+                if (photo instanceof File) {
+                  formData.append(`premiumHotelPhotos`, photo);
+                }
+              });
+            }
+    
+            // Append car photos
+            if (itinerary.carPhotos && Array.isArray(itinerary.carPhotos)) {
+              itinerary.carPhotos.forEach((photo) => {
+                if (photo instanceof File) {
+                  formData.append(`premiumCarPhotos`, photo);
+                }
+              });
+            }
+    
+            // Append meal photos for breakfast, lunch, and dinner
+            if (itinerary.meals?.breakfast?.photos) {
+              itinerary.meals.breakfast.photos.forEach((photo) => {
+                if (photo instanceof File) {
+                  formData.append(`premiumMealsPhotos`, photo);
+                }
+              });
+            }
+    
+            if (itinerary.meals?.lunch?.photos) {
+              itinerary.meals.lunch.photos.forEach((photo) => {
+                if (photo instanceof File) {
+                  formData.append(`premiumMealsPhotos`, photo);
+                }
+              });
+            }
+    
+            if (itinerary.meals?.dinner?.photos) {
+              itinerary.meals.dinner.photos.forEach((photo) => {
+                if (photo instanceof File) {
+                  formData.append(`premiumMealsPhotos`, photo);
                 }
               });
             }
           });
         }
-
-        // Add banner image if available
+    
+        // Add banner image and other photos
         if (tourData.bannerImage) {
           formData.append('bannerImage', tourData.bannerImage);
         }
-
-        // Add images if available
+    
         if (tourData.images && Array.isArray(tourData.images)) {
           tourData.images.forEach((image) => {
             if (image instanceof File) {
               formData.append('images', image);
-            } else {
-              console.error('Invalid image:', image);
             }
           });
         }
-
+    
         // Append other tour data fields, ensuring objects are stringified
         for (const key in tourData) {
           if (
@@ -542,64 +933,82 @@ const NewTour = ({ title }) => {
             formData.append(key, tourData[key]);
           }
         }
-
+    
         // Serialize nested objects
         formData.append('standardDetails', JSON.stringify(tourData.standardDetails));
         formData.append('deluxeDetails', JSON.stringify(tourData.deluxeDetails));
         formData.append('premiumDetails', JSON.stringify(tourData.premiumDetails));
         formData.append('openHours', JSON.stringify(tourData.openHours));
         formData.append('fixedDates', JSON.stringify(tourData.fixedDates));
-
-
+    
         // Send formData to the server
         const response = await fetch(`${BASE_URL}/api/createTours`, {
           method: "POST",
-          body: formData, // Send FormData directly
+          body: formData,
         });
-
+    
         if (!response.ok) {
           const errorResponse = await response.json();
           throw new Error(`Failed to create tour: ${errorResponse.error}`);
         }
-
+    
         const responseData = await response.json();
         console.log("API response:", responseData);
         toast.success("Tour created successfully!");
       } catch (error) {
-        console.error("Error:", error); // Log the error for debugging
-        toast.error(error.message); // Notify user of the error
+        console.error("Error:", error);
+        toast.error(error.message);
       }
     };
-
+    
+    // Call the function
+   
+    
     // Call the function
     handleSaveChanges();
   }
-
-
-  const handleCheckboxChange = (e) => {
-    const { name, checked } = e.target;
-
-    // Set the true/false value for each checkbox in the tourData object
-    setTourData((prevState) => ({
-      ...prevState,
-      [name]: checked, // This will dynamically update based on the checkbox name (fixedDates/openHours)
-    }));
-  };
 
   const renderStandardDetails = () => (
     <div className="standardDetails">
       <h3>Standard Tour Details</h3>
 
       {/* Price Field */}
+
+
+      {/* Pricing Field */}
       <div className="formGroup">
-        <label>Price</label>
-        <input
-          type="text"
-          value={tourData.standardDetails.price}
-          onChange={(e) => handleFieldChange("price", e.target.value, "standardDetails")}
-          placeholder="Enter price"
-        />
+        <label>Pricing</label>
+        {tourData.standardDetails.pricing.map((priceObj, index) => (
+          <div key={index}>
+            <input
+              type="number"
+              value={priceObj.price}
+              onChange={(e) =>
+                handlePricingArrayChange(index, { ...priceObj, price: e.target.value }, "standardDetails")
+              }
+              placeholder={`Price for ${priceObj.person} person`}
+            />
+            {tourData.standardDetails.pricing.length > 1 && (
+              <button
+                type="button"
+                className="deleteButton"
+                onClick={() => removeArrayField(index, "pricing", "standardDetails")}
+              >
+                Remove
+              </button>
+            )}
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => addPricingArrayField("pricing", "standardDetails")}
+          className="add-more"
+        >
+          Add More Pricing
+        </button>
       </div>
+
+
       <div className="formGroup">
         <label>Standard Cancellation Policy</label>
         <input
@@ -758,115 +1167,298 @@ const NewTour = ({ title }) => {
       </div>
       <div className="formGroup">
         <h3>Standard Itineraries</h3>
-        {tourData.deluxeDetails.itineraries.map((itinerary, index) => (
-  <div key={index} className="itinerary">
-    <label>Day {itinerary.day}</label>
-    <input
-      type="text"
-      name="title"
-      value={itinerary.title}
-      onChange={(e) => handleItineraryChange(index, "title", e.target.value, "deluxeDetails")}
-      placeholder="Enter itinerary title"
-    />
-    <textarea
-      name="description"
-      value={itinerary.description}
-      onChange={(e) => handleItineraryChange(index, "description", e.target.value, "deluxeDetails")}
-      placeholder="Enter itinerary description"
-    />
+        {tourData.standardDetails.itineraries.map((itinerary, index) => (
+          <div key={index} className="itinerary">
+            <label>Day {itinerary.day}</label>
+            <input
+              type="text"
+              name="title"
+              value={itinerary.title}
+              onChange={(e) => handleItineraryChange(index, "title", e.target.value, "standardDetails")}
+              placeholder="Enter itinerary title"
+            />
+            <input
+              name="description"
+              value={itinerary.description}
+              onChange={(e) => handleItineraryChange(index, "description", e.target.value, "standardDetails")}
+              placeholder="Enter itinerary description"
+            />
 
-    {/* Hotel Name */}
-    <input
-      type="text"
-      name="hotelName"
-      value={itinerary.hotelName}
-      onChange={(e) => handleItineraryChange(index, "hotelName", e.target.value, "deluxeDetails")}
-      placeholder="Enter hotel name"
-    />
+            {/* Hotel Name */}
+            <input
+              type="text"
+              name="hotelName"
+              value={itinerary.hotelName}
+              onChange={(e) => handleItineraryChange(index, "hotelName", e.target.value, "standardDetails")}
+              placeholder="Enter hotel name"
+            />
 
-    {/* Hotel URL */}
-    <input
-      type="text"
-      name="hotelUrl"
-      value={itinerary.hotelUrl}
-      onChange={(e) => handleItineraryChange(index, "hotelUrl", e.target.value, "deluxeDetails")}
-      placeholder="Enter hotel URL"
-    />
+            {/* Hotel URL */}
+            <input
+              type="text"
+              name="hotelUrl"
+              value={itinerary.hotelUrl}
+              onChange={(e) => handleItineraryChange(index, "hotelUrl", e.target.value, "standardDetails")}
+              placeholder="Enter hotel URL"
+            />
 
-    {/* Siteseen Photos */}
-    <label>Siteseen Photos</label>
-    <input
-      type="file"
-      name="siteSeenPhotos"
-      multiple
-      onChange={(e) => handleSiteSeenPhotoChange(e, index, "deluxeDetails")} // Pass index correctly
-    />
+            {/* Siteseen Photos */}
+            <label>Siteseen Photos</label>
+            <input
+              type="file"
+              name="siteSeenPhotos"
+              multiple
+              onChange={(e) => handleSiteSeenPhotoChange(e, index, "standardDetails")} // Pass index correctly
+            />
 
-    {/* Display site seen photos */}
-    {itinerary.siteSeenPhotos.length > 0 && (
-      <div className="photo-preview">
-        {itinerary.siteSeenPhotos.map((photo, photoIndex) => (
-          <div key={photoIndex} className="photo-container">
-            <img src={URL.createObjectURL(photo)} alt={`Siteseen photo ${photoIndex}`} />
-            <button
-              className="delete-photo"
-              onClick={() => handleDeleteSiteSeenPhoto(index, photoIndex, "deluxeDetails")}
-            >
-              &times; {/* Delete button */}
+            {/* Display site seen photos */}
+            {itinerary.siteSeenPhotos.length > 0 && (
+              <div className="photo-preview">
+                {itinerary.siteSeenPhotos.map((photo, photoIndex) => (
+                  <div key={photoIndex} className="photo-container">
+                    <img src={URL.createObjectURL(photo)} alt={`Siteseen ${photoIndex}`} />
+                    <button
+                      className="delete-photo"
+                      onClick={() => handleDeleteSiteSeenPhoto(index, photoIndex, "standardDetails")}
+                    >
+                      &times; {/* Delete button */}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+             <label>Hotel Photos</label>
+            <input
+              type="file"
+              name="hotelphotos"
+              multiple
+              onChange={(e) => handleHotelPhotoChange(e, index, "standardDetails")} // Pass index correctly
+            />
+
+            {/* Display site seen photos */}
+            {itinerary.hotelPhotos.length > 0 && (
+              <div className="photo-preview">
+                {itinerary.hotelPhotos.map((photo, photoIndex) => (
+                  <div key={photoIndex} className="photo-container">
+                    <img src={URL.createObjectURL(photo)} alt={`Hotel ${photoIndex}`} />
+                    <button
+                      className="delete-photo"
+                      onClick={() => handleDeleteHotelPhoto(index, photoIndex, "standardDetails")}
+                    >
+                      &times; {/* Delete button */}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="meals-checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  value="breakfast"
+                  checked={itinerary.meals.breakfast.isAvailable}
+                  onChange={(e) => handleMealChange(e, index, "breakfast", "standardDetails")}
+                />
+                Breakfast
+              </label>
+              {itinerary.meals.breakfast.isAvailable == true && (
+                <div className="meal-details">
+                  <label>Breakfast Name</label>
+                  <input
+                    type="text"
+                    name="breakfastName"
+                    value={itinerary.meals.breakfast.name}
+                    onChange={(e) => handleItineraryMealsChange(index, "breakfast", "name", e.target.value, "standardDetails")}
+                    placeholder="Enter breakfast name"
+                  />
+                  <label>Breakfast Photos</label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => handleItineraryMealsChange(index, "breakfast", "photos", Array.from(e.target.files), "standardDetails")}
+                  />
+
+                  {itinerary.meals.breakfast.photos?.length > 0 && (
+                    <div className="photo-preview">
+                      {itinerary.meals.breakfast.photos.map((photo, photoIndex) => (
+                        <div key={photoIndex} className="photo-container">
+                          {/* If the item is a File object, use createObjectURL, otherwise assume it's a string URL */}
+                          <img
+                            src={photo instanceof File ? URL.createObjectURL(photo) : photo}
+                            alt={`Breakfast ${photoIndex}`}
+                          />
+                          <button
+                            className="delete-photo"
+                            onClick={() => handleDeleteMealPhoto(index, photoIndex, "breakfast", "standardDetails")}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <label>
+                <input
+                  type="checkbox"
+                  value="lunch"
+                  checked={itinerary.meals.lunch.isAvailable}
+                  onChange={(e) => handleMealChange(e, index, "lunch", "standardDetails")}
+                />
+                Lunch
+              </label>
+
+
+              {itinerary.meals.lunch.isAvailable == true && (
+                <div className="meal-details">
+                  <label>LunchName</label>
+                  <input
+                    type="text"
+                    name="lunchName"
+                    value={itinerary.meals.lunch.name}
+                    onChange={(e) => handleItineraryMealsChange(index, "lunch", "name", e.target.value, "standardDetails")}
+                    placeholder="Enter lunch name"
+                  />
+                  <label>Breakfast Photos</label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => handleItineraryMealsChange(index, "lunch", "photos", Array.from(e.target.files), "standardDetails")}
+                  />
+                  {itinerary.meals.lunch.photos?.length > 0 && (
+                    <div className="photo-preview">
+                      {itinerary.meals.lunch.photos.map((photo, photoIndex) => (
+                        <div key={photoIndex} className="photo-container">
+                          <img src={URL.createObjectURL(photo)} alt={`Linch ${photoIndex}`} />
+                          <button
+                            className="delete-photo"
+                            onClick={() => handleDeleteMealPhoto(index, photoIndex, "breakfastPhotos", "standardDetails")}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+
+              <label>
+                <input
+                  type="checkbox"
+                  value="Dinner"
+                  checked={itinerary.meals.dinner.isAvailable}
+                  onChange={(e) => handleMealChange(e, index, "dinner", "standardDetails")}
+                />
+                Dinner
+              </label>
+              {itinerary.meals.dinner.isAvailable == true && (
+                <div className="meal-details">
+                  <label>Dinner Name</label>
+                  <input
+                    type="text"
+                    name="dinnerName"
+                    value={itinerary.meals.dinner.name}
+                    onChange={(e) => handleItineraryMealsChange(index, "dinner", "name", e.target.value, "standardDetails")}
+                    placeholder="Enter dinner name"
+                  />
+                  <label>Dinner Photos</label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => handleItineraryMealsChange(index, "dinner", "photos", Array.from(e.target.files), "standardDetails")}
+                  />
+                  {itinerary.meals.dinner.photos?.length > 0 && (
+                    <div className="photo-preview">
+                      {itinerary.meals.dinner.photos.map((photo, photoIndex) => (
+                        <div key={photoIndex} className="photo-container">
+                          <img src={URL.createObjectURL(photo)} alt={`Linch ${photoIndex}`} />
+                          <button
+                            className="delete-photo"
+                            onClick={() => handleDeleteMealPhoto(index, photoIndex, "dinnerPhotos", "standardDetails")}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+
+            <input
+              type="text"
+              name="managerName"
+              value={itinerary.managerName}
+              onChange={(e) => handleItineraryChange(index, "managerName", e.target.value, "standardDetails")}
+              placeholder="Enter manager name"
+            />
+            <label>
+              <input
+                type="checkbox"
+                name="transportation"
+                checked={itinerary.transportation || false}
+                onChange={(e) => {
+                  setOpenStandardTransportation(!openStandardTransportation);
+                }}
+              />
+              Include Transportation
+            </label>
+
+            {openStandardTransportation && (
+              <div className="transportation-section">
+                {/* Car Name */}
+                <label>Car Name</label>
+                <input
+                  type="text"
+                  name="carName"
+                  value={itinerary.carName}
+                  onChange={(e) => handleItineraryChange(index, "carName", e.target.value, "standardDetails")}
+                  placeholder="Enter car name"
+                />
+
+                {/* Car Photos */}
+                <label>Car Photos</label>
+                <input
+                  type="file"
+                  name="carPhotos"
+                  multiple
+                  onChange={(e) => handleCarPhotosChange(e, index, "standardDetails")}
+                />
+
+                {/* Display car photos */}
+                {itinerary.carPhotos && itinerary.carPhotos.length > 0 && (
+                  <div className="photo-preview">
+                    {itinerary.carPhotos.map((photo, photoIndex) => (
+                      <div key={photoIndex} className="photo-container">
+                        <img src={URL.createObjectURL(photo)} alt={`Car ${photoIndex}`} />
+                        <button
+                          className="delete-photo"
+                          onClick={() => handleDeleteCarPhoto(index, photoIndex, "standardDetails")}
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <button type="button" onClick={() => removeItinerary("standardDetails", index)} className="deleteButton">
+              Remove Itinerary
             </button>
           </div>
         ))}
-      </div>
-    )}
-
-    {/* Meals Checkboxes */}
-    <div className="meals-checkbox">
-      <label>
-        <input
-          type="checkbox"
-          value="Breakfast"
-          checked={itinerary.meals.includes("Breakfast")}
-          onChange={(e) => handleMealChange(e, index, "deluxeDetails")}
-        />
-        Breakfast
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          value="Lunch"
-          checked={itinerary.meals.includes("Lunch")}
-          onChange={(e) => handleMealChange(e, index, "deluxeDetails")}
-        />
-        Lunch
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          value="Dinner"
-          checked={itinerary.meals.includes("Dinner")}
-          onChange={(e) => handleMealChange(e, index, "deluxeDetails")}
-        />
-        Dinner
-      </label>
-    </div>
-
-    {/* Manager Name */}
-    <input
-      type="text"
-      name="managerName"
-      value={itinerary.managerName}
-      onChange={(e) => handleItineraryChange(index, "managerName", e.target.value, "deluxeDetails")}
-      placeholder="Enter manager name"
-    />
-
-    <button type="button" onClick={() => removeItinerary("deluxeDetails", index)} className="deleteButton">
-      Remove Itinerary
-    </button>
-  </div>
-))}
-<button type="button" onClick={() => addItinerary("deluxeDetails")}>
-  Add Deluxe Itinerary
-</button>
+        <button type="button" onClick={() => addItinerary("standardDetails")}>
+          Add Standard Itinerary
+        </button>
 
       </div>
 
@@ -880,13 +1472,35 @@ const NewTour = ({ title }) => {
 
       {/* Price Field */}
       <div className="formGroup">
-        <label>Price</label>
-        <input
-          type="text"
-          value={tourData.deluxeDetails.price}
-          onChange={(e) => handleFieldChange("price", e.target.value, "deluxeDetails")}
-          placeholder="Enter price"
-        />
+        <label>Pricing</label>
+        {tourData.deluxeDetails.pricing.map((priceObj, index) => (
+          <div key={index}>
+            <input
+              type="number"
+              value={priceObj.price}
+              onChange={(e) =>
+                handlePricingArrayChange(index, { ...priceObj, price: e.target.value }, "deluxeDetails")
+              }
+              placeholder={`Price for ${priceObj.person} person`}
+            />
+            {tourData.deluxeDetails.pricing.length > 1 && (
+              <button
+                type="button"
+                className="deleteButton"
+                onClick={() => removeArrayField(index, "pricing", "deluxeDetails")}
+              >
+                Remove
+              </button>
+            )}
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => addPricingArrayField("pricing", "deluxeDetails")}
+          className="add-more"
+        >
+          Add More Pricing
+        </button>
       </div>
 
       {/* Cancellation Policy */}
@@ -1057,7 +1671,7 @@ const NewTour = ({ title }) => {
               onChange={(e) => handleItineraryChange(index, "title", e.target.value, "deluxeDetails")}
               placeholder="Enter itinerary title"
             />
-            <textarea
+            <input
               name="description"
               value={itinerary.description}
               onChange={(e) => handleItineraryChange(index, "description", e.target.value, "deluxeDetails")}
@@ -1082,67 +1696,201 @@ const NewTour = ({ title }) => {
               placeholder="Enter hotel URL"
             />
 
-            {tourData.deluxeDetails.itineraries.map((itinerary, itineraryIndex) => (
-              <div key={itineraryIndex}>
-                {/* Other itinerary details */}
-                <label>Siteseen Photos</label>
-                <input
-                  type="file"
-                  name="siteSeenPhotos"
-                  multiple
-                  onChange={(e) => handleSiteSeenPhotoChange(e, itineraryIndex, "deluxeDetails")} // Make sure to pass itineraryIndex
-                />
 
-                {/* Display site seen photos */}
-                {itinerary.siteSeenPhotos.length > 0 && (
-                  <div className="photo-preview">
-                    {itinerary.siteSeenPhotos.map((photo, photoIndex) => (
-                      <div key={photoIndex} className="photo-container">
-                        <img src={URL.createObjectURL(photo)} alt={`Siteseen photo ${photoIndex}`} />
-                        <button
-                          className="delete-photo"
-                          onClick={() => handleDeleteSiteSeenPhoto(itineraryIndex, photoIndex, "deluxeDetails")}
-                        >
-                          &times; {/* Delete button */}
-                        </button>
-                      </div>
-                    ))}
+            <div>
+              {/* Other itinerary details */}
+              <label>Siteseen Photos</label>
+              <input
+                type="file"
+                name="siteSeenPhotos"
+                multiple
+                onChange={(e) => handleSiteSeenPhotoChange(e, index, "deluxeDetails")} // Pass index correctly
+              />
+
+              {/* Display site seen photos */}
+              {itinerary.siteSeenPhotos.length > 0 && (
+                <div className="photo-preview">
+                  {itinerary.siteSeenPhotos.map((photo, photoIndex) => (
+                    <div key={photoIndex} className="photo-container">
+                      <img src={URL.createObjectURL(photo)} alt={`Siteseen ${photoIndex}`} />
+                      <button
+                        className="delete-photo"
+                        onClick={() => handleDeleteSiteSeenPhoto(index, photoIndex, "deluxeDetails")}
+                      >
+                        &times; {/* Delete button */}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+
+            <label>Hotel Photos</label>
+            <input
+              type="file"
+              name="hotelphotos"
+              multiple
+              onChange={(e) => handleHotelPhotoChange(e, index, "deluxeDetails")} // Pass index correctly
+            />
+
+            {/* Display site seen photos */}
+            {itinerary.hotelPhotos.length > 0 && (
+              <div className="photo-preview">
+                {itinerary.hotelPhotos.map((photo, photoIndex) => (
+                  <div key={photoIndex} className="photo-container">
+                    <img src={URL.createObjectURL(photo)} alt={`Hotel ${photoIndex}`} />
+                    <button
+                      className="delete-photo"
+                      onClick={() => handleDeleteHotelPhoto(index, photoIndex, "deluxeDetails")}
+                    >
+                      &times; {/* Delete button */}
+                    </button>
                   </div>
-                )}
+                ))}
               </div>
-            ))}
-
+            )}
 
             {/* Meals Checkboxes */}
             <div className="meals-checkbox">
               <label>
                 <input
                   type="checkbox"
-                  value="Breakfast"
-                  checked={itinerary.meals.includes("Breakfast")}
-                  onChange={(e) => handleMealChange(e, index, "deluxeDetails")}
+                  value="breakfast"
+                  checked={itinerary.meals.breakfast.isAvailable}
+                  onChange={(e) => handleMealChange(e, index, "breakfast", "deluxeDetails")}
                 />
                 Breakfast
               </label>
+              {itinerary.meals.breakfast.isAvailable == true && (
+                <div className="meal-details">
+                  <label>Breakfast Name</label>
+                  <input
+                    type="text"
+                    name="breakfastName"
+                    value={itinerary.meals.breakfast.name}
+                    onChange={(e) => handleItineraryMealsChange(index, "breakfast", "name", e.target.value, "deluxeDetails")}
+                    placeholder="Enter breakfast name"
+                  />
+                  <label>Breakfast Photos</label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => handleItineraryMealsChange(index, "breakfast", "photos", Array.from(e.target.files), "deluxeDetails")}
+                  />
+
+                  {itinerary.meals.breakfast.photos?.length > 0 && (
+                    <div className="photo-preview">
+                      {itinerary.meals.breakfast.photos.map((photo, photoIndex) => (
+                        <div key={photoIndex} className="photo-container">
+                          {/* If the item is a File object, use createObjectURL, otherwise assume it's a string URL */}
+                          <img
+                            src={photo instanceof File ? URL.createObjectURL(photo) : photo}
+                            alt={`Breakfast ${photoIndex}`}
+                          />
+                          <button
+                            className="delete-photo"
+                            onClick={() => handleDeleteMealPhoto(index, photoIndex, "breakfast", "deluxeDetails")}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <label>
                 <input
                   type="checkbox"
-                  value="Lunch"
-                  checked={itinerary.meals.includes("Lunch")}
-                  onChange={(e) => handleMealChange(e, index, "deluxeDetails")}
+                  value="lunch"
+                  checked={itinerary.meals.lunch.isAvailable}
+                  onChange={(e) => handleMealChange(e, index, "lunch", "deluxeDetails")}
                 />
                 Lunch
               </label>
+
+
+              {itinerary.meals.lunch.isAvailable == true && (
+                <div className="meal-details">
+                  <label>LunchName</label>
+                  <input
+                    type="text"
+                    name="lunchName"
+                    value={itinerary.meals.lunch.name}
+                    onChange={(e) => handleItineraryMealsChange(index, "lunch", "name", e.target.value, "deluxeDetails")}
+                    placeholder="Enter lunch name"
+                  />
+                  <label>Breakfast Photos</label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => handleItineraryMealsChange(index, "lunch", "photos", Array.from(e.target.files), "deluxeDetails")}
+                  />
+                  {itinerary.meals.lunch.photos?.length > 0 && (
+                    <div className="photo-preview">
+                      {itinerary.meals.lunch.photos.map((photo, photoIndex) => (
+                        <div key={photoIndex} className="photo-container">
+                          <img src={URL.createObjectURL(photo)} alt={`Linch ${photoIndex}`} />
+                          <button
+                            className="delete-photo"
+                            onClick={() => handleDeleteMealPhoto(index, photoIndex, "breakfastPhotos", "deluxeDetails")}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+
               <label>
                 <input
                   type="checkbox"
                   value="Dinner"
-                  checked={itinerary.meals.includes("Dinner")}
-                  onChange={(e) => handleMealChange(e, index, "deluxeDetails")}
+                  checked={itinerary.meals.dinner.isAvailable}
+                  onChange={(e) => handleMealChange(e, index, "dinner", "deluxeDetails")}
                 />
                 Dinner
               </label>
+              {itinerary.meals.dinner.isAvailable == true && (
+                <div className="meal-details">
+                  <label>Dinner Name</label>
+                  <input
+                    type="text"
+                    name="dinnerName"
+                    value={itinerary.meals.dinner.name}
+                    onChange={(e) => handleItineraryMealsChange(index, "dinner", "name", e.target.value, "deluxeDetails")}
+                    placeholder="Enter dinner name"
+                  />
+                  <label>Dinner Photos</label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => handleItineraryMealsChange(index, "dinner", "photos", Array.from(e.target.files), "deluxeDetails")}
+                  />
+                  {itinerary.meals.dinner.photos?.length > 0 && (
+                    <div className="photo-preview">
+                      {itinerary.meals.dinner.photos.map((photo, photoIndex) => (
+                        <div key={photoIndex} className="photo-container">
+                          <img src={URL.createObjectURL(photo)} alt={`Linch ${photoIndex}`} />
+                          <button
+                            className="delete-photo"
+                            onClick={() => handleDeleteMealPhoto(index, photoIndex, "dinnerPhotos", "deluxeDetails")}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
+
 
             {/* Manager Name */}
             <input
@@ -1152,6 +1900,57 @@ const NewTour = ({ title }) => {
               onChange={(e) => handleItineraryChange(index, "managerName", e.target.value, "deluxeDetails")}
               placeholder="Enter manager name"
             />
+            <label>
+              <input
+                type="checkbox"
+                name="transportation"
+                checked={itinerary.transportation || false}
+                onChange={(e) => {
+                  setOpenTranportation(!openTranportation);
+                }}
+              />
+              Include Transportation
+            </label>
+
+            {openTranportation && (
+              <div className="transportation-section">
+                {/* Car Name */}
+                <label>Car Name</label>
+                <input
+                  type="text"
+                  name="carName"
+                  value={itinerary.carName || ""}
+                  onChange={(e) => handleItineraryChange(index, "carName", e.target.value, "deluxeDetails")}
+                  placeholder="Enter car name"
+                />
+
+                {/* Car Photos */}
+                <label>Car Photos</label>
+                <input
+                  type="file"
+                  name="carPhotos"
+                  multiple
+                  onChange={(e) => handleCarPhotosChange(e, index, "deluxeDetails")}
+                />
+
+                {/* Display car photos */}
+                {itinerary.carPhotos && itinerary.carPhotos.length > 0 && (
+                  <div className="photo-preview">
+                    {itinerary.carPhotos.map((photo, photoIndex) => (
+                      <div key={photoIndex} className="photo-container">
+                        <img src={URL.createObjectURL(photo)} alt={`Car ${photoIndex}`} />
+                        <button
+                          className="delete-photo"
+                          onClick={() => handleDeleteCarPhoto(index, photoIndex, "deluxeDetails")}
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             <button type="button" onClick={() => removeItinerary("deluxeDetails", index)} className="deleteButton">
               Remove Itinerary
@@ -1172,13 +1971,35 @@ const NewTour = ({ title }) => {
 
       {/* Price Field */}
       <div className="formGroup">
-        <label>Price</label>
-        <input
-          type="text"
-          value={tourData.premiumDetails.price}
-          onChange={(e) => handleFieldChange("price", e.target.value, "premiumDetails")}
-          placeholder="Enter price"
-        />
+        <label>Pricing</label>
+        {tourData.premiumDetails.pricing.map((priceObj, index) => (
+          <div key={index}>
+            <input
+              type="number"
+              value={priceObj.price}
+              onChange={(e) =>
+                handlePricingArrayChange(index, { ...priceObj, price: e.target.value }, "premiumDetails")
+              }
+              placeholder={`Price for ${priceObj.person} person`}
+            />
+            {tourData.premiumDetails.pricing.length > 1 && (
+              <button
+                type="button"
+                className="deleteButton"
+                onClick={() => removeArrayField(index, "pricing", "premiumDetails")}
+              >
+                Remove
+              </button>
+            )}
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => addPricingArrayField("pricing", "premiumDetails")}
+          className="add-more"
+        >
+          Add More Pricing
+        </button>
       </div>
       <div className="formGroup">
         <label>Premium Cancellation Policy</label>
@@ -1328,7 +2149,7 @@ const NewTour = ({ title }) => {
               onChange={(e) => handleItineraryChange(index, "title", e.target.value, "premiumDetails")}
               placeholder="Enter itinerary title"
             />
-            <textarea
+            <input
               name="description"
               value={itinerary.description}
               onChange={(e) => handleItineraryChange(index, "description", e.target.value, "premiumDetails")}
@@ -1354,67 +2175,202 @@ const NewTour = ({ title }) => {
             />
 
             {/* Site Seen Photos */}
-            {tourData.premiumDetails.itineraries.map((itinerary, itineraryIndex) => (
-              <div key={itineraryIndex}>
-                <label>Siteseen Photos</label>
-                <input
-                  type="file"
-                  name="siteSeenPhotos"
-                  multiple
-                  onChange={(e) => handleSiteSeenPhotoChange(e, itineraryIndex, "premiumDetails")}
-                />
 
-                {/* Display site seen photos */}
-                {itinerary.siteSeenPhotos.length > 0 && (
-                  <div className="photo-preview">
-                    {itinerary.siteSeenPhotos.map((photo, photoIndex) => (
-                      <div key={photoIndex} className="photo-container">
-                        <img src={URL.createObjectURL(photo)} alt={`Siteseen photo ${photoIndex}`} />
-                        <button
-                          className="delete-photo"
-                          onClick={() => handleDeleteSiteSeenPhoto(itineraryIndex, photoIndex, "premiumDetails")}
-                        >
-                          &times; {/* Delete button */}
-                        </button>
-                      </div>
-                    ))}
+            <label>Siteseen Photos</label>
+            <input
+              type="file"
+              name="siteSeenPhotos"
+              multiple
+              onChange={(e) => handleSiteSeenPhotoChange(e, index, "premiumDetails")}
+            />
+
+            {/* Display site seen photos */}
+            {itinerary.siteSeenPhotos.length > 0 && (
+              <div className="photo-preview">
+                {itinerary.siteSeenPhotos.map((photo, photoIndex) => (
+                  <div key={photoIndex} className="photo-container">
+                    <img src={URL.createObjectURL(photo)} alt={`Siteseen ${photoIndex}`} />
+                    <button
+                      className="delete-photo"
+                      onClick={() => handleDeleteSiteSeenPhoto(index, photoIndex, "premiumDetails")}
+                    >
+                      &times; {/* Delete button */}
+                    </button>
                   </div>
-                )}
+                ))}
               </div>
-            ))}
+            )}
+          <label>Hotel Photos</label>
+            <input
+              type="file"
+              name="hotelphotos"
+              multiple
+              onChange={(e) => handleHotelPhotoChange(e, index, "premiumDetails")} // Pass index correctly
+            />
+
+            {/* Display site seen photos */}
+            {itinerary.hotelPhotos.length > 0 && (
+              <div className="photo-preview">
+                {itinerary.hotelPhotos.map((photo, photoIndex) => (
+                  <div key={photoIndex} className="photo-container">
+                    <img src={URL.createObjectURL(photo)} alt={`Hotel ${photoIndex}`} />
+                    <button
+                      className="delete-photo"
+                      onClick={() => handleDeleteHotelPhoto(index, photoIndex, "premiumDetails")}
+                    >
+                      &times; {/* Delete button */}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Display site seen photos */}
+          
+
 
             {/* Meals Checkboxes */}
             <div className="meals-checkbox">
               <label>
                 <input
                   type="checkbox"
-                  value="Breakfast"
-                  checked={itinerary.meals.includes("Breakfast")}
-                  onChange={(e) => handleMealChange(e, index, "premiumDetails")}
+                  value="breakfast"
+                  checked={itinerary.meals.breakfast.isAvailable}
+                  onChange={(e) => handleMealChange(e, index, "breakfast", "premiumDetails")}
                 />
                 Breakfast
               </label>
+              {itinerary.meals.breakfast.isAvailable == true && (
+                <div className="meal-details">
+                  <label>Breakfast Name</label>
+                  <input
+                    type="text"
+                    name="breakfastName"
+                    value={itinerary.meals.breakfast.name}
+                    onChange={(e) => handleItineraryMealsChange(index, "breakfast", "name", e.target.value, "premiumDetails")}
+                    placeholder="Enter breakfast name"
+                  />
+                  <label>Breakfast Photos</label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => handleItineraryMealsChange(index, "breakfast", "photos", Array.from(e.target.files), "premiumDetails")}
+                  />
+
+                  {itinerary.meals.breakfast.photos?.length > 0 && (
+                    <div className="photo-preview">
+                      {itinerary.meals.breakfast.photos.map((photo, photoIndex) => (
+                        <div key={photoIndex} className="photo-container">
+                          {/* If the item is a File object, use createObjectURL, otherwise assume it's a string URL */}
+                          <img
+                            src={photo instanceof File ? URL.createObjectURL(photo) : photo}
+                            alt={`Breakfast ${photoIndex}`}
+                          />
+                          <button
+                            className="delete-photo"
+                            onClick={() => handleDeleteMealPhoto(index, photoIndex, "breakfast", "premiumDetails")}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <label>
                 <input
                   type="checkbox"
-                  value="Lunch"
-                  checked={itinerary.meals.includes("Lunch")}
-                  onChange={(e) => handleMealChange(e, index, "premiumDetails")}
+                  value="lunch"
+                  checked={itinerary.meals.lunch.isAvailable}
+                  onChange={(e) => handleMealChange(e, index, "lunch", "premiumDetails")}
                 />
                 Lunch
               </label>
+
+
+              {itinerary.meals.lunch.isAvailable == true && (
+                <div className="meal-details">
+                  <label>LunchName</label>
+                  <input
+                    type="text"
+                    name="lunchName"
+                    value={itinerary.meals.lunch.name}
+                    onChange={(e) => handleItineraryMealsChange(index, "lunch", "name", e.target.value, "premiumDetails")}
+                    placeholder="Enter lunch name"
+                  />
+                  <label>Breakfast Photos</label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => handleItineraryMealsChange(index, "lunch", "photos", Array.from(e.target.files), "premiumDetails")}
+                  />
+                  {itinerary.meals.lunch.photos?.length > 0 && (
+                    <div className="photo-preview">
+                      {itinerary.meals.lunch.photos.map((photo, photoIndex) => (
+                        <div key={photoIndex} className="photo-container">
+                          <img src={URL.createObjectURL(photo)} alt={`Linch ${photoIndex}`} />
+                          <button
+                            className="delete-photo"
+                            onClick={() => handleDeleteMealPhoto(index, photoIndex, "breakfastPhotos", "premiumDetails")}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+
               <label>
                 <input
                   type="checkbox"
                   value="Dinner"
-                  checked={itinerary.meals.includes("Dinner")}
-                  onChange={(e) => handleMealChange(e, index, "premiumDetails")}
+                  checked={itinerary.meals.dinner.isAvailable}
+                  onChange={(e) => handleMealChange(e, index, "dinner", "premiumDetails")}
                 />
                 Dinner
               </label>
+              {itinerary.meals.dinner.isAvailable == true && (
+                <div className="meal-details">
+                  <label>Dinner Name</label>
+                  <input
+                    type="text"
+                    name="dinnerName"
+                    value={itinerary.meals.dinner.name}
+                    onChange={(e) => handleItineraryMealsChange(index, "dinner", "name", e.target.value, "premiumDetails")}
+                    placeholder="Enter dinner name"
+                  />
+                  <label>Dinner Photos</label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => handleItineraryMealsChange(index, "dinner", "photos", Array.from(e.target.files), "premiumDetails")}
+                  />
+                  {itinerary.meals.dinner.photos?.length > 0 && (
+                    <div className="photo-preview">
+                      {itinerary.meals.dinner.photos.map((photo, photoIndex) => (
+                        <div key={photoIndex} className="photo-container">
+                          <img src={URL.createObjectURL(photo)} alt={`Linch ${photoIndex}`} />
+                          <button
+                            className="delete-photo"
+                            onClick={() => handleDeleteMealPhoto(index, photoIndex, "dinnerPhotos", "premiumDetails")}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* Manager Name */}
+
+
             <input
               type="text"
               name="managerName"
@@ -1422,7 +2378,57 @@ const NewTour = ({ title }) => {
               onChange={(e) => handleItineraryChange(index, "managerName", e.target.value, "premiumDetails")}
               placeholder="Enter manager name"
             />
+            <label>
+              <input
+                type="checkbox"
+                name="transportation"
+                checked={itinerary.transportation || false}
+                onChange={(e) => {
+                  setOpenPremiumTranportation(!openPremiumTranportation);
+                }}
+              />
+              Include Transportation
+            </label>
 
+            {openPremiumTranportation && (
+              <div className="transportation-section">
+                {/* Car Name */}
+                <label>Car Name</label>
+                <input
+                  type="text"
+                  name="carName"
+                  value={itinerary.carName || ""}
+                  onChange={(e) => handleItineraryChange(index, "carName", e.target.value, "premiumDetails")}
+                  placeholder="Enter car name"
+                />
+
+                {/* Car Photos */}
+                <label>Car Photos</label>
+                <input
+                  type="file"
+                  name="carPhotos"
+                  multiple
+                  onChange={(e) => handleCarPhotosChange(e, index, "premiumDetails")}
+                />
+
+                {/* Display car photos */}
+                {itinerary.carPhotos && itinerary.carPhotos.length > 0 && (
+                  <div className="photo-preview">
+                    {itinerary.carPhotos.map((photo, photoIndex) => (
+                      <div key={photoIndex} className="photo-container">
+                        <img src={URL.createObjectURL(photo)} alt={`Car ${photoIndex}`} />
+                        <button
+                          className="delete-photo"
+                          onClick={() => handleDeleteCarPhoto(index, photoIndex, "premiumDetails")}
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             <button
               type="button"
               className="deleteButton"
@@ -1647,6 +2653,49 @@ const NewTour = ({ title }) => {
               />
             </div>
 
+            <div className="formGroup">
+              <input
+                type="checkbox"
+                name="welcomeDrinks"
+                checked={tourData.welcomeDrinks}
+                onChange={(e) => setTourData((prevData) => ({
+                  ...prevData,
+                  welcomeDrinks: e.target.checked
+                }))}
+              />
+              <span> Include Welcome Drinks</span>
+            </div>
+
+            <div className="formGroup">
+              <label>Departure Details</label>
+              <input
+                type="text"
+                name="departureDetails"
+                value={tourData.departureDetails}
+                onChange={handleChange}
+                placeholder="Enter departure details"
+              />
+            </div>
+
+            <div className="formGroup">
+              <label>Know Before You Go</label>
+              <input
+                name="knowBeforeYouGo"
+                value={tourData.knowBeforeYouGo}
+                onChange={handleChange}
+                placeholder="Enter information that travelers should know before they go"
+              />
+            </div>
+
+            <div className="formGroup">
+              <label>Additional Information</label>
+              <input
+                name="additionalInfo"
+                value={tourData.additionalInfo}
+                onChange={handleChange}
+                placeholder="Enter any additional information"
+              />
+            </div>
             <div className="formGroup">
               <label>Upload Banner Image</label>
               <input

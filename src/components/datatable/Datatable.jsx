@@ -42,14 +42,14 @@ const Datatable = () => {
       console.error("Error fetching tours:", error);
     }
   };
-
+console.log(allTours)
   useEffect(() => {
     fetchAllTours();
   }, []);
 
-  const handleDeleteClick = (uuid) => {
-    setTourIdToDelete(uuid); // Store the tour ID to delete
-    setOpenDialog(true); // Open the confirmation dialog
+  const handleDeleteClick = () => {
+  
+    setOpenDialog(true);
   };
 
   const handleCloseDialog = () => {
@@ -59,7 +59,7 @@ const Datatable = () => {
   const handleConfirmDelete = async () => {
     try {
       // Call delete API
-      await fetch(`${BASE_URL}/api/deleteTour/${tourIdToDelete}`, {
+      await fetch(`${BASE_URL}/api/deleteTour/${allTours[0].id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -80,15 +80,15 @@ const Datatable = () => {
       field: "action",
       headerName: "Action",
       width: 200,
-      renderCell: (params) => {
+      renderCell: () => {
         return (
           <div className="cellAction">
-            <Link to={`/tours/${params.row.id}`} style={{ textDecoration: "none" }}>
+            <Link to={`/editTour/${allTours[0].id}`} style={{ textDecoration: "none" }}>
               <div className="viewButton">Edit</div>
             </Link>
             <div
               className="deleteButton"
-              onClick={() => handleDeleteClick(params.row.id)} // Pass the ID of the tour to delete
+              onClick={() => handleDeleteClick()} // Pass the ID of the tour to delete
             >
               Delete
             </div>
