@@ -6,6 +6,7 @@ import { BASE_URL } from "../../utils/headers";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { v4 as uuidv4 } from 'uuid';
+// import { v2 as cloudinary } from 'cloudinary';
 
 const NewTour = ({ title }) => {
   const [openTranportation, setOpenTranportation] = useState(false);
@@ -122,7 +123,7 @@ const NewTour = ({ title }) => {
           image: "",
           description: "",
           day: 1,
-          hotelPhotos:[],
+          hotelPhotos: [],
           hotelName: "",
           hotelUrl: "",
           siteSeenPhotos: [],
@@ -174,7 +175,7 @@ const NewTour = ({ title }) => {
           day: 1,
           hotelName: "",
           hotelUrl: "",
-          hotelPhotos:[],
+          hotelPhotos: [],
           siteSeenPhotos: [],
           transportation: false, // Ensure this is initialized
           carName: "",
@@ -293,7 +294,7 @@ const NewTour = ({ title }) => {
       description: '',
       hotelName: '',
       hotelUrl: '',
-      hotelPhotos:[],
+      hotelPhotos: [],
       siteSeenPhotos: [],
       meals: {
         breakfast: {
@@ -736,192 +737,192 @@ const NewTour = ({ title }) => {
     const handleSaveChanges = async () => {
       try {
         const formData = new FormData();
-    
-        // Append site seen and hotel photos from standard itineraries
+        const uploadedImageUrls = []; // Array to store uploaded image URLs
+
+        // Helper function to upload images to Cloudinary
+        const uploadImageToCloudinary = async (image) => {
+          const cloudinaryURL = 'https://api.cloudinary.com/v1_1/dmyzudtut/image/upload';
+          const formData = new FormData();
+          formData.append('file', image);
+          formData.append('upload_preset', 'ljqbwqy9');
+
+          const response = await fetch(cloudinaryURL, {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            return data.secure_url; // Return the uploaded image URL
+          } else {
+            throw new Error('Failed to upload image to Cloudinary');
+          }
+        };
+
+        // Function to append images to itineraries
+      // Function to append images to itineraries
+const appendImagesToItinerary = async (itinerary) => {
+  const uploadPhotos = async (photos, field) => {
+    if (photos) {
+      // Ensure the target field exists and is initialized as an array
+      if (!Array.isArray(itinerary[field])) {
+        itinerary[field] = [];
+      }
+
+      for (const photo of photos) {
+        if (photo instanceof File) {
+          const uploadedUrl = await uploadImageToCloudinary(photo);
+          uploadedImageUrls.push(uploadedUrl); // Store the uploaded URL
+          // Only push if the URL is a valid string
+          if (uploadedUrl) {
+            itinerary[field].push(uploadedUrl);
+          }
+        } else if (typeof photo === 'string' && photo.trim() !== '') {
+          // Push only valid URLs
+          itinerary[field].push(photo);
+        }
+      }
+    }
+  };
+
+  // Safely check and upload only if the fields are defined, else default to empty arrays
+  await uploadPhotos(itinerary.siteSeenPhotos?.filter(Boolean) || [], 'siteSeenPhotos'); // Filter out empty values
+  await uploadPhotos(itinerary.hotelPhotos?.filter(Boolean) || [], 'hotelPhotos'); // Filter out empty values
+  await uploadPhotos(itinerary.carPhotos?.filter(Boolean) || [], 'carPhotos'); // Filter out empty values
+
+  // Ensure meals exist, and default to empty arrays if not
+  itinerary.meals = itinerary.meals || {}; // Initialize meals object if undefined
+  itinerary.meals.breakfast = itinerary.meals.breakfast || { photos: [] }; // Ensure breakfast and photos array are initialized
+  itinerary.meals.lunch = itinerary.meals.lunch || { photos: [] }; // Ensure lunch and photos array are initialized
+  itinerary.meals.dinner = itinerary.meals.dinner || { photos: [] }; // Ensure dinner and photos array are initialized
+
+  await uploadPhotos(itinerary.meals.breakfast.photos?.filter(Boolean) || [], 'meals.breakfast.photos');
+  await uploadPhotos(itinerary.meals.lunch.photos?.filter(Boolean) || [], 'meals.lunch.photos');
+  await uploadPhotos(itinerary.meals.dinner.photos?.filter(Boolean) || [], 'meals.dinner.photos');
+
+  // Filter out any empty objects or invalid URLs from the itinerary fields
+  itinerary.siteSeenPhotos = itinerary.siteSeenPhotos?.filter(photo => typeof photo === 'string' && photo.trim() !== '') || [];
+  itinerary.hotelPhotos = itinerary.hotelPhotos?.filter(photo => typeof photo === 'string' && photo.trim() !== '') || [];
+  itinerary.carPhotos = itinerary.carPhotos?.filter(photo => typeof photo === 'string' && photo.trim() !== '') || [];
+  itinerary.meals.breakfast.photos = itinerary.meals.breakfast.photos?.filter(photo => typeof photo === 'string' && photo.trim() !== '') || [];
+  itinerary.meals.lunch.photos = itinerary.meals.lunch.photos?.filter(photo => typeof photo === 'string' && photo.trim() !== '') || [];
+  itinerary.meals.dinner.photos = itinerary.meals.dinner.photos?.filter(photo => typeof photo === 'string' && photo.trim() !== '') || [];
+};
+
+        // Append images for standard itineraries
         if (tourData.standardDetails?.itineraries) {
-          tourData.standardDetails.itineraries.forEach((itinerary) => {
-            // Append site seen photos
-            if (itinerary.siteSeenPhotos && Array.isArray(itinerary.siteSeenPhotos)) {
-              itinerary.siteSeenPhotos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`standardSiteSeenPhotos`, photo);
-                }
-              });
-            }
-    
-            // Append hotel photos
-            if (itinerary.hotelPhotos && Array.isArray(itinerary.hotelPhotos)) {
-              itinerary.hotelPhotos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`standardHotelPhotos`, photo);
-                }
-              });
-            }
-    
-            // Append car photos
-            if (itinerary.carPhotos && Array.isArray(itinerary.carPhotos)) {
-              itinerary.carPhotos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`standardCarPhotos`, photo);
-                }
-              });
-            }
-    
-            // Append meal photos for breakfast, lunch, and dinner
-            if (itinerary.meals?.breakfast?.photos) {
-              itinerary.meals.breakfast.photos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`standardMealsPhotos`, photo);
-                }
-              });
-            }
-    
-            if (itinerary.meals?.lunch?.photos) {
-              itinerary.meals.lunch.photos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`standardMealsPhotos`, photo);
-                }
-              });
-            }
-    
-            if (itinerary.meals?.dinner?.photos) {
-              itinerary.meals.dinner.photos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`standardMealsPhotos`, photo);
-                }
-              });
-            }
-          });
+          for (const itinerary of tourData.standardDetails.itineraries) {
+            await appendImagesToItinerary(itinerary);
+          }
         }
-    
-        // Repeat the process for deluxe itineraries
+
+        // Repeat for deluxe itineraries
         if (tourData.deluxeDetails?.itineraries) {
-          tourData.deluxeDetails.itineraries.forEach((itinerary) => {
-            // Append site seen photos
-            if (itinerary.siteSeenPhotos && Array.isArray(itinerary.siteSeenPhotos)) {
-              itinerary.siteSeenPhotos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`deluxeSiteSeenPhotos`, photo);
-                }
-              });
-            }
-    
-            // Append hotel photos
-            if (itinerary.hotelPhotos && Array.isArray(itinerary.hotelPhotos)) {
-              itinerary.hotelPhotos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`deluxeHotelPhotos`, photo);
-                }
-              });
-            }
-    
-            // Append car photos
-            if (itinerary.carPhotos && Array.isArray(itinerary.carPhotos)) {
-              itinerary.carPhotos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`deluxeCarPhotos`, photo);
-                }
-              });
-            }
-    
-            // Append meal photos for breakfast, lunch, and dinner
-            if (itinerary.meals?.breakfast?.photos) {
-              itinerary.meals.breakfast.photos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`deluxeMealsPhotos`, photo);
-                }
-              });
-            }
-    
-            if (itinerary.meals?.lunch?.photos) {
-              itinerary.meals.lunch.photos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`deluxeMealsPhotos`, photo);
-                }
-              });
-            }
-    
-            if (itinerary.meals?.dinner?.photos) {
-              itinerary.meals.dinner.photos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`deluxeMealsPhotos`, photo);
-                }
-              });
-            }
-          });
+          for (const itinerary of tourData.deluxeDetails.itineraries) {
+            await appendImagesToItinerary(itinerary);
+          }
         }
-    
-        // Repeat the process for premium itineraries
+
+        // Repeat for premium itineraries
         if (tourData.premiumDetails?.itineraries) {
-          tourData.premiumDetails.itineraries.forEach((itinerary) => {
-            // Append site seen photos
-            if (itinerary.siteSeenPhotos && Array.isArray(itinerary.siteSeenPhotos)) {
-              itinerary.siteSeenPhotos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`premiumSiteSeenPhotos`, photo);
-                }
-              });
-            }
-    
-            // Append hotel photos
-            if (itinerary.hotelPhotos && Array.isArray(itinerary.hotelPhotos)) {
-              itinerary.hotelPhotos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`premiumHotelPhotos`, photo);
-                }
-              });
-            }
-    
-            // Append car photos
-            if (itinerary.carPhotos && Array.isArray(itinerary.carPhotos)) {
-              itinerary.carPhotos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`premiumCarPhotos`, photo);
-                }
-              });
-            }
-    
-            // Append meal photos for breakfast, lunch, and dinner
-            if (itinerary.meals?.breakfast?.photos) {
-              itinerary.meals.breakfast.photos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`premiumMealsPhotos`, photo);
-                }
-              });
-            }
-    
-            if (itinerary.meals?.lunch?.photos) {
-              itinerary.meals.lunch.photos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`premiumMealsPhotos`, photo);
-                }
-              });
-            }
-    
-            if (itinerary.meals?.dinner?.photos) {
-              itinerary.meals.dinner.photos.forEach((photo) => {
-                if (photo instanceof File) {
-                  formData.append(`premiumMealsPhotos`, photo);
-                }
-              });
-            }
-          });
+          for (const itinerary of tourData.premiumDetails.itineraries) {
+            await appendImagesToItinerary(itinerary);
+          }
         }
-    
-        // Add banner image and other photos
+
+        // Add banner image
         if (tourData.bannerImage) {
-          formData.append('bannerImage', tourData.bannerImage);
+          const bannerImageUrl = await uploadImageToCloudinary(tourData.bannerImage);
+          uploadedImageUrls.push(bannerImageUrl);
+          formData.append('bannerImage', bannerImageUrl);
         }
-    
+
+        // Add other images (not the file, just URLs)
         if (tourData.images && Array.isArray(tourData.images)) {
-          tourData.images.forEach((image) => {
+          for (const image of tourData.images) {
             if (image instanceof File) {
-              formData.append('images', image);
+              const uploadedUrl = await uploadImageToCloudinary(image);
+              uploadedImageUrls.push(uploadedUrl);
+              formData.append('images', uploadedUrl); // Append only the URL
             }
-          });
+          }
         }
-    
-        // Append other tour data fields, ensuring objects are stringified
+
+        // Reset image fields in tourData to prevent sending files
+        setTourData(prevData => ({
+          ...prevData,
+          standardDetails: {
+            ...prevData.standardDetails,
+            itineraries: prevData.standardDetails.itineraries.map(itinerary => ({
+              ...itinerary,
+              siteSeenPhotos: [],
+              hotelPhotos: [],
+              carPhotos: [],
+              meals: {
+                breakfast: {
+                  ...itinerary.meals.breakfast,
+                  photos: [],
+                },
+                lunch: {
+                  ...itinerary.meals.lunch,
+                  photos: [],
+                },
+                dinner: {
+                  ...itinerary.meals.dinner,
+                  photos: [],
+                },
+              },
+            })),
+          },
+          deluxeDetails: {
+            ...prevData.deluxeDetails,
+            itineraries: prevData.deluxeDetails.itineraries.map(itinerary => ({
+              ...itinerary,
+              siteSeenPhotos: [],
+              hotelPhotos: [],
+              carPhotos: [],
+              meals: {
+                breakfast: {
+                  ...itinerary.meals.breakfast,
+                  photos: [],
+                },
+                lunch: {
+                  ...itinerary.meals.lunch,
+                  photos: [],
+                },
+                dinner: {
+                  ...itinerary.meals.dinner,
+                  photos: [],
+                },
+              },
+            })),
+          },
+          premiumDetails: {
+            ...prevData.premiumDetails,
+            itineraries: prevData.premiumDetails.itineraries.map(itinerary => ({
+              ...itinerary,
+              siteSeenPhotos: [],
+              hotelPhotos: [],
+              carPhotos: [],
+              meals: {
+                breakfast: {
+                  ...itinerary.meals.breakfast,
+                  photos: [],
+                },
+                lunch: {
+                  ...itinerary.meals.lunch,
+                  photos: [],
+                },
+                dinner: {
+                  ...itinerary.meals.dinner,
+                  photos: [],
+                },
+              },
+            })),
+          },
+        }));
+
+        // Append other tour data fields to formData
         for (const key in tourData) {
           if (
             key !== 'images' &&
@@ -933,25 +934,29 @@ const NewTour = ({ title }) => {
             formData.append(key, tourData[key]);
           }
         }
-    
-        // Serialize nested objects
+
+        // Serialize and append nested objects
         formData.append('standardDetails', JSON.stringify(tourData.standardDetails));
         formData.append('deluxeDetails', JSON.stringify(tourData.deluxeDetails));
         formData.append('premiumDetails', JSON.stringify(tourData.premiumDetails));
         formData.append('openHours', JSON.stringify(tourData.openHours));
         formData.append('fixedDates', JSON.stringify(tourData.fixedDates));
-    
+
+        // Log all uploaded image URLs
+        console.log("Uploaded Image URLs:", uploadedImageUrls);
+        console.log("form data", formData);
+
         // Send formData to the server
         const response = await fetch(`${BASE_URL}/api/createTours`, {
           method: "POST",
           body: formData,
         });
-    
+
         if (!response.ok) {
           const errorResponse = await response.json();
           throw new Error(`Failed to create tour: ${errorResponse.error}`);
         }
-    
+
         const responseData = await response.json();
         console.log("API response:", responseData);
         toast.success("Tour created successfully!");
@@ -960,13 +965,10 @@ const NewTour = ({ title }) => {
         toast.error(error.message);
       }
     };
-    
-    // Call the function
-   
-    
+
     // Call the function
     handleSaveChanges();
-  }
+  };
 
   const renderStandardDetails = () => (
     <div className="standardDetails">
@@ -1227,7 +1229,7 @@ const NewTour = ({ title }) => {
                 ))}
               </div>
             )}
-             <label>Hotel Photos</label>
+            <label>Hotel Photos</label>
             <input
               type="file"
               name="hotelphotos"
@@ -2200,7 +2202,7 @@ const NewTour = ({ title }) => {
                 ))}
               </div>
             )}
-          <label>Hotel Photos</label>
+            <label>Hotel Photos</label>
             <input
               type="file"
               name="hotelphotos"
@@ -2226,7 +2228,7 @@ const NewTour = ({ title }) => {
             )}
 
             {/* Display site seen photos */}
-          
+
 
 
             {/* Meals Checkboxes */}
